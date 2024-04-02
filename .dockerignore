@@ -1,0 +1,3 @@
+.git/
+.venv/
+database.sqlite

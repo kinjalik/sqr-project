@@ -8,6 +8,9 @@ init:
 test:
 	. venv/bin/activate; cd src/; PYTHONPATH=. pytest tests -W ignore::DeprecationWarning
 
+docker-run:
+	docker-compose up --build
+
 format:
 	( \
 		. venv/bin/activate; cd src;\

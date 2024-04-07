@@ -8,6 +8,6 @@ mkdir -p ~/.streamlit/
 echo "[general]"  > ~/.streamlit/credentials.toml
 echo "email = \"\""  >> ~/.streamlit/credentials.toml
 
-pushd "$BASEDIR/app"
+pushd "$BASEDIR/../src/app"
     bash ./run.sh
 popd

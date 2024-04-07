@@ -8,9 +8,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11"
 streamlit = "1.32.2"
-pytest = "^8.1.1"
-fastapi = "^0.110.1"
-selenium = "^4.19.0"
+
 
 [build-system]
 requires = ["poetry-core"]

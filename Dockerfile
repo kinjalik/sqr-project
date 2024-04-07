@@ -1,8 +1,7 @@
 FROM python:3.11-slim
 
 
-COPY requirements.txt .
-RUN pip install -r requirements.txt
+RUN pip install poetry
 
 WORKDIR /app
 COPY src /app

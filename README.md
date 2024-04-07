@@ -7,4 +7,4 @@
 3. `make lint-check` for check code quality
 
 ### Run&Build Docker container
-`make docker run`
+`make docker-run`

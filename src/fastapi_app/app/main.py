@@ -4,10 +4,10 @@ Web app setup
 
 import typing as t
 
-from fastapi import FastAPI
-
+from app.api.task import router as task_api
 from app.api.user import router as user_api
 from app.db_client import DatabaseClient, DatabaseConfig
+from fastapi import FastAPI
 
 
 def create_start_app_handler(
@@ -33,6 +33,7 @@ def get_application() -> FastAPI:
 
     application.add_event_handler("startup", create_start_app_handler(application))
 
+    application.include_router(task_api)
     application.include_router(user_api)
 
     return application

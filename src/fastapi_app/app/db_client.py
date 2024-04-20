@@ -41,28 +41,28 @@ class DatabaseConfig(BaseSettings):
 class DatabaseClient:
     def __init__(self, config: DatabaseConfig):
         self.engine = create_engine(config.database_url)
-        self.Session = sessionmaker(bind=self.engine)
+        self.make_session = sessionmaker(bind=self.engine)
         Base.metadata.create_all(self.engine)
 
     def add_task(self, user: str, text: str, deadline: datetime, prior: int):
-        with self.Session() as session:
+        with self.make_session() as session:
             new_task = Task(user=user, text=text, deadline=deadline, prior=prior)
             session.add(new_task)
             session.commit()
             return new_task.id
 
     def add_user(self, email: str, hashed_password: str):
-        with self.Session() as session:
+        with self.make_session() as session:
             new_user = User(email=email, hashed_password=hashed_password)
             session.add(new_user)
             session.commit()
 
     def get_tasks(self, user: str):
-        with self.Session() as session:
+        with self.make_session() as session:
             return session.query(Task).filter_by(user=user).all()
 
     def complete_task(self, task_id: int):
-        with self.Session() as session:
+        with self.make_session() as session:
             task = session.query(Task).filter_by(id=task_id).first()
             if task:
                 task.is_completed = True

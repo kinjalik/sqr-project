@@ -18,13 +18,15 @@ class Task(Base):
     is_completed = Column(Boolean, default=False)
 
     def __repr__(self):
-        return (f"Task("
-                f"id={self.id}, "
-                f"User='{self.user}', "
-                f"Text='{self.text}', "
-                f"Deadline='{self.deadline}', "
-                f"Priority='{self.prior}', "
-                f"Completed={self.is_completed})")
+        return (
+            f"Task("
+            f"id={self.id}, "
+            f"User='{self.user}', "
+            f"Text='{self.text}', "
+            f"Deadline='{self.deadline}', "
+            f"Priority='{self.prior}', "
+            f"Completed={self.is_completed})"
+        )
 
 
 class User(Base):
@@ -82,8 +84,10 @@ if __name__ == "__main__":
     email = "aboba@innopolis.university"
     db_client.add_user(email=email, hashed_password="hashed_pass")
 
-    id_task = db_client.add_task(user=email, text="I LOVE SQR", deadline=datetime.now(), prior=1)
-    print(f'New id: {id_task}')
+    id_task = db_client.add_task(
+        user=email, text="I LOVE SQR", deadline=datetime.now(), prior=1
+    )
+    print(f"New id: {id_task}")
     tasks = db_client.get_tasks(user=email)
 
     print_all_tasks(db_client, email)

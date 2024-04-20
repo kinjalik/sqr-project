@@ -1,9 +1,8 @@
-from fastapi import APIRouter, Depends, Request, responses, Response
-
 from app import di
 from app.db_client import DatabaseClient
 from app.service import task as service
 from app.shcemas.task import TaskCreateSchema
+from fastapi import APIRouter, Depends, Request, Response, responses
 
 router = APIRouter()
 
@@ -13,9 +12,13 @@ router = APIRouter()
 )
 async def create_task(
     task_create_data: TaskCreateSchema,
+    request: Request,
     db_client: DatabaseClient = Depends(di.db_client),
 ):
     try:
+        if request.app.state is None:
+            raise ValueError
+        # TODO: return task id
         await service.create_task(
             task_data=task_create_data,
             db_client=db_client,

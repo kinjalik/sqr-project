@@ -2,8 +2,9 @@ from app.db_client import DatabaseClient
 
 
 async def create_user(email: str, hashed_password: str, db_client: DatabaseClient):
-    pass
+    db_client.add_user(email, hashed_password)
 
 
 async def get_user(email: str, hashed_password: str, db_client: DatabaseClient) -> str:
     pass
+    # TODO: return db_client.get_user(email, hashed_password)

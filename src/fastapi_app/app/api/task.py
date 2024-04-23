@@ -16,9 +16,6 @@ async def create_task(
     db_client: DatabaseClient = Depends(di.db_client),
 ):
     try:
-        if request.app.state is None:
-            raise ValueError
-        # TODO: return task id
         await service.create_task(
             task_data=task_create_data,
             db_client=db_client,

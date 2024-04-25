@@ -1,0 +1,6 @@
+[MAIN]
+ignore-patterns=.*/site-packages/.*\.py
+load-plugins=
+    pylint_actions
+
+disable=missing-class-docstring,missing-function-docstring,missing-module-docstring,too-few-public-methods

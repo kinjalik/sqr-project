@@ -1,3 +1,9 @@
+ifdef SILENT
+.SILENT:
+endif
+
+ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
+
 init:
 	python3.11 -m venv venv
 	. venv/bin/activate; pip install -r requirements.txt;
@@ -5,8 +11,15 @@ init:
 	. venv/bin/activate; cd src/streamlit_app; poetry install
 	@echo "\n\033[0;32mYour dev environment is ready!\033[0m\n"
 
+# Usual testing
 test-backend:
-	. venv/bin/activate; cd src/fastapi_app; PYTHONPATH=. pytest tests -W ignore::DeprecationWarning $(cmd)
+	. venv/bin/activate; cd src/fastapi_app; \
+	PYTHONPATH=. pytest tests -W ignore::DeprecationWarning $(coverage_params) $(ARGS)
+
+# Covered testing
+coverage-backend: coverage_report_output ?= coverage_report
+coverage-backend: coverage_params = --cov=app --cov-report=term-missing:skip-covered --cov-report=html:$(ROOT_DIR)/$(coverage_report_output) --cov-branch
+coverage-backend: test-backend
 
 docker-run:
 	docker-compose up --build
@@ -18,7 +31,23 @@ format:
 		black fastapi_app; isort fastapi_app;\
 	)
 
-lint-check:
-	. venv/bin/activate; cd src; flake8 streamlit_app; flake8 fastapi_app; \
-	pylint streamlit_app; refurb --enable-all streamlit_app; \
-	pylint fastapi_app/app; refurb --enable-all fastapi_app/app; \
+# Linter
+lint-check: 
+	$(MAKE) -k -$(MAKEFLAGS) lint-pylint; \
+	$(MAKE) -k -$(MAKEFLAGS) lint-flake8; \
+	$(MAKE) -k -$(MAKEFLAGS) lint-refurb; \
+
+lint-pylint:
+	. venv/bin/activate; cd src; \
+	pylint streamlit_app --rcfile=$(ROOT_DIR)/src/.pylintrc $(ARGS); \
+	pylint fastapi_app/app --rcfile=$(ROOT_DIR)/src/.pylintrc $(ARGS); \
+
+lint-flake8:
+	. venv/bin/activate; cd src; \
+	flake8 streamlit_app; \
+	flake8 fastapi_app; \
+
+lint-refurb:
+	. venv/bin/activate; cd src; \
+	refurb --enable-all streamlit_app; \
+	refurb --enable-all fastapi_app/app; \

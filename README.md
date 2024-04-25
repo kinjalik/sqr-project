@@ -8,3 +8,8 @@
 
 ### Run&Build Docker container
 `make docker-run`
+
+### Run checks
+- Backend tests: `make test-backend`
+- Coverage: `make coverage-backend`
+- Linter: `make lint-check`

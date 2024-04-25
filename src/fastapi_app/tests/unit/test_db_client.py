@@ -1,10 +1,10 @@
-import hashlib
+import asyncio
+from datetime import datetime, timedelta
 
 import pytest
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker
-from datetime import datetime, timedelta
 from app.db_client import DatabaseClient, DatabaseConfig
+from sqlalchemy import text
+from sqlalchemy.orm import sessionmaker
 
 EMAIL = "email"
 HASHED_PASSWORD = "hashed_password"
@@ -83,7 +83,7 @@ def add_task_raw_sql(db_session, user, new_text, deadline, prior, is_completed=F
     return result.fetchone()[0]
 
 
-def test_add_user(db_client, db_session, credo_user1):
+async def test_add_user(db_client, db_session, credo_user1):
     db_client.add_user(credo_user1[EMAIL], credo_user1[HASHED_PASSWORD])
 
     result = get_user_raw_sql(db_session, credo_user1)
@@ -93,7 +93,7 @@ def test_add_user(db_client, db_session, credo_user1):
     assert result[1] == credo_user1[HASHED_PASSWORD]
 
 
-def test_add_task(db_client, db_session, credo_user1):
+async def test_add_task(db_client, db_session, credo_user1):
     new_text = "TEST_TEXT"
     deadline = datetime.now() + timedelta(days=228)
     prior = 882
@@ -110,7 +110,7 @@ def test_add_task(db_client, db_session, credo_user1):
     assert not result[5]
 
 
-def test_complete_task(db_client, db_session, credo_user1):
+async def test_complete_task(db_client, db_session, credo_user1):
     new_text = "SHOULD BE DONE"
     deadline = datetime.now() + timedelta(days=4)
     prior = 2
@@ -128,7 +128,7 @@ def test_complete_task(db_client, db_session, credo_user1):
     assert result[5]
 
 
-def test_get_task(db_client, db_session, credo_user1):
+async def test_get_task(db_client, db_session, credo_user1):
     new_text = "SOME TEXT"
     deadline = datetime.now()
     prior = 4
@@ -136,7 +136,7 @@ def test_get_task(db_client, db_session, credo_user1):
     add_task_raw_sql(db_session, credo_user1[EMAIL], new_text, deadline, prior)
 
     tasks = db_client.get_tasks(credo_user1[EMAIL])
-    print(tasks)
+
     assert tasks is not None
     assert len(tasks) == 1
     assert tasks[0].user == credo_user1[EMAIL]

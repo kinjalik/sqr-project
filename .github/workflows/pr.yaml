@@ -1,0 +1,66 @@
+name: CI
+on: pull_request
+
+permissions:
+  checks: write
+  contents: write
+  pull-requests: write
+
+jobs:
+  pylint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Init
+        uses: ./.github/actions/init
+
+      - name: Add matcher
+        run: echo "::add-matcher::.github/matchers/pylint.json"
+
+      - name: Run pylint
+        run: make lint-pylint SILENT=1
+
+  flake8:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Init
+        uses: ./.github/actions/init
+
+      - name: Add matcher
+        run: echo "::add-matcher::.github/matchers/flake8.json"
+
+      - name: Run flake8
+        run: make lint-flake8 SILENT=1
+        
+
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Init
+        uses: ./.github/actions/init
+      - name: Run tests
+        run: |
+          make ARGS="--junitxml=$(pwd)/report.junit.xml" coverage-backend | tee pytest-coverage.txt || true
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v4
+        if: success() || failure()
+        with:
+          report_paths: "*.junit.xml"
+      
+      - name: Pytest coverage comment
+        id: coverageComment
+        uses: MishaKav/pytest-coverage-comment@main
+        if: success() || failure()
+        with:
+          pytest-coverage-path: pytest-coverage.txt
+          junitxml-path: report.junit.xml
+          title: Coverage Report
+      
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: success() || failure()
+        with:
+          name: Coverage report
+          path: coverage_report

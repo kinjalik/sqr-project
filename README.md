@@ -11,5 +11,7 @@
 
 ### Run checks
 - Backend tests: `make test-backend`
+- Backend security: `make security-backend`
 - Coverage: `make coverage-backend`
 - Linter: `make lint-check`
+- Frontend security: `make security-frontend`

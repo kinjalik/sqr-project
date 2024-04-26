@@ -5,9 +5,10 @@ permissions:
   checks: write
   contents: write
   pull-requests: write
+  security-events: write
 
 jobs:
-  pylint:
+  pylint-linter:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,7 +21,7 @@ jobs:
       - name: Run pylint
         run: make lint-pylint SILENT=1
 
-  flake8:
+  flake8-linter:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -87,3 +88,35 @@ jobs:
         with:
           name: Coverage report
           path: coverage_report
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Init
+        uses: ./.github/actions/init
+
+      - name: Backend check
+        run: make security-backend ARGS="-f sarif -o $(pwd)/backend.bandit.sarif --exit-zero"
+      - name: Frontend check
+        run: make security-frontend ARGS="-f sarif -o $(pwd)/frontend.bandit.sarif --exit-zero"
+
+      - name: Upload fbackend SARIF file
+        uses: github/codeql-action/upload-sarif@v3
+        if: success() || failure()
+        with:
+          sarif_file: backend.bandit.sarif
+          category: bandit-backend
+      - name: Upload frontend SARIF file
+        uses: github/codeql-action/upload-sarif@v3
+        if: success() || failure()
+        with:
+          sarif_file: frontend.bandit.sarif
+          category: bandit-frontend
+
+      - name: Upload SARIF reports as artifacts
+        uses: actions/upload-artifact@v4
+        if: success() || failure()
+        with:
+          name: security_reports
+          path: '*.sarif'

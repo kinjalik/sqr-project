@@ -51,3 +51,14 @@ lint-refurb:
 	. venv/bin/activate; cd src; \
 	refurb --enable-all streamlit_app; \
 	refurb --enable-all fastapi_app/app; \
+
+# Security
+# It's necessary to run from root directory
+security-backend:
+	. venv/bin/activate; \
+	bandit -r src/fastapi_app/app $(ARGS); \
+
+
+security-frontend:
+	. venv/bin/activate; \
+	bandit -r src/streamlit_app/app $(ARGS); \

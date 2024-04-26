@@ -97,3 +97,16 @@ jobs:
         with:
           name: security_reports
           path: '*.sarif'
+
+  smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Init
+        uses: ./.github/actions/init
+
+      - name: Start docker-compose
+        run: make docker-run ARGS='-d --wait --wait-timeout 60'
+      - name: Stop docker-compose
+        if: success() || failure()
+        run: docker-compose down

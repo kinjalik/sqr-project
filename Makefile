@@ -22,7 +22,7 @@ coverage-backend: coverage_params = --cov=app --cov-report=term-missing:skip-cov
 coverage-backend: test-backend
 
 docker-run:
-	docker-compose up --build
+	docker-compose up --build $(ARGS)
 
 format:
 	( \

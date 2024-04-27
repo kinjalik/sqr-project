@@ -1,8 +1,9 @@
-from pydantic_settings import BaseSettings
-from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime
-from sqlalchemy.orm import declarative_base
-from sqlalchemy.orm import sessionmaker
 from datetime import datetime
+
+from pydantic_settings import BaseSettings
+from sqlalchemy import (Boolean, Column, DateTime, Integer, String,
+                        create_engine)
+from sqlalchemy.orm import declarative_base, sessionmaker
 
 Base = declarative_base()
 
@@ -58,9 +59,3 @@ class DatabaseClient:
             if task:
                 task.is_completed = True
                 session.commit()
-
-
-def print_all_tasks(db_client, user):
-    tasks = db_client.get_tasks(user)
-    for task in tasks:
-        print(task)

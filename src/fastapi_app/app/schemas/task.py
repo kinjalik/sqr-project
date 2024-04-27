@@ -6,7 +6,7 @@ from pydantic import BaseModel
 class TaskCreateSchema(BaseModel):
     user: str
     text: str
-    deadline: datetime
+    deadline: str
     prior: int
 
 

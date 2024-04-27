@@ -1,7 +1,7 @@
 from app import di
 from app.db_client import DatabaseClient
+from app.schemas.task import TaskCreateSchema
 from app.service import task as service
-from app.shcemas.task import TaskCreateSchema
 from fastapi import APIRouter, Depends, Request, Response, responses
 
 router = APIRouter()
@@ -12,7 +12,6 @@ router = APIRouter()
 )
 async def create_task(
     task_create_data: TaskCreateSchema,
-    request: Request,
     db_client: DatabaseClient = Depends(di.db_client),
 ):
     try:
@@ -27,7 +26,7 @@ async def create_task(
 
 
 @router.delete(
-    "/task",
+    "/task/{id}",
 )
 async def delete_task(
     id: str,

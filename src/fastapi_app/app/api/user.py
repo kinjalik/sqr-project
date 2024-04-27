@@ -1,9 +1,8 @@
-from fastapi import APIRouter, Depends, Request, Response
-
 from app import di
 from app.db_client import DatabaseClient
+from app.schemas.user import UserDataSchema
 from app.service import user as service
-from app.shcemas.user import UserDataSchema
+from fastapi import APIRouter, Depends, Request, Response
 
 router = APIRouter()
 

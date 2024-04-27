@@ -1,15 +1,16 @@
 from typing import List
+from datetime import datetime
 
 from app.db_client import DatabaseClient
 from app.schemas.task import TaskCreateSchema, TaskModel
 
 
 async def create_task(task_data: TaskCreateSchema, db_client: DatabaseClient):
-    return db_client.create_task(
+    return db_client.add_task(
         # TODO: parse deadline from str format (%Y.%m.%d %H:%M:%S) to datetime ??
         task_data.user,
         task_data.text,
-        task_data.deadline,
+        datetime.strptime(task_data.deadline, "%Y.%m.%d %H:%M:%S"),
         task_data.prior,
     )
 

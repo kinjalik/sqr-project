@@ -1,6 +1,6 @@
 init:
 	python3.11 -m venv venv
-	. venv/bin/activate; pip install -r requirements.txt; pre-commit install
+	. venv/bin/activate; pip install -r requirements.txt;
 	. venv/bin/activate; cd src/fastapi_app; poetry install
 	. venv/bin/activate; cd src/streamlit_app; poetry install
 	@echo "\n\033[0;32mYour dev environment is ready!\033[0m\n"

@@ -1,3 +1,4 @@
+# pylint: disable=redefined-outer-name
 """
 Web app setup
 """
@@ -6,6 +7,7 @@ import typing as t
 
 from app.api.task import router as task_api
 from app.api.user import router as user_api
+from app.api.health import router as healthcheck_api
 from app.db_client import DatabaseClient, DatabaseConfig
 from fastapi import FastAPI
 
@@ -35,6 +37,7 @@ def get_application() -> FastAPI:
 
     application.include_router(task_api)
     application.include_router(user_api)
+    application.include_router(healthcheck_api)
 
     return application
 

@@ -1,4 +1,3 @@
-import asyncio
 from datetime import datetime
 from random import randint
 from unittest.mock import MagicMock

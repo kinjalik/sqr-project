@@ -233,3 +233,23 @@ async def test_get_task_check_prior(db_client, db_session, credo_user1, credo_ta
 
     assert tasks[2].prior == 2
     assert tasks[3].prior == 1
+
+
+async def test_edit_task(db_client, db_session, credo_user1, credo_task1):
+    add_user_raw_sql(db_session, credo_user1)
+    task_id = add_task_raw_sql(
+        db_session,
+        credo_user1[EMAIL],
+        credo_task1[TEXT],
+        credo_task1[DEADLINE],
+        credo_task1[PRIOR],
+    )
+
+    new_text = "NEW_TEXT"
+    new_deadline = datetime.now() + timedelta(days=777)
+    new_prior = 82347
+    db_client.edit_task(task_id, new_text, new_deadline, new_prior)
+    edited_task = get_task_raw_sql(db_session, task_id)
+    assert edited_task[2] == new_text
+    assert edited_task[3] == str(new_deadline)
+    assert edited_task[4] == new_prior

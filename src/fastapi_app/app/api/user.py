@@ -21,7 +21,7 @@ async def register(
             db_client=db_client,
         )
     except ValueError:
-        return Response(
+        return responses.JSONResponse(
             status_code=400, content={"error": "this user is already registered"}
         )
 
@@ -41,6 +41,8 @@ async def login(
             user_data.email, user_data.hashed_password, db_client=db_client
         )
     except ValueError:
-        return responses.JSONResponse(status_code=404, content={"error": "the user was not found"})
+        return responses.JSONResponse(
+            status_code=404, content={"error": "the user was not found"}
+        )
 
     return Response(status_code=200)

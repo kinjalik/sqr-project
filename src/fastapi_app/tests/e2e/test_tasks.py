@@ -33,7 +33,7 @@ def test_client(user, db_mock):
     tapp = TestClient(app)
 
     app.dependency_overrides[di.db_client] = lambda: db_mock
-    app.state.user = user
+    app.state.user = user.email
     return tapp
 
 
@@ -66,4 +66,6 @@ async def test_get_tasks(user, test_client, db_mock):
     db_mock.get_tasks.assert_called_once_with(user.email)
 
 
-# TODO: test other methods
+async def test_complete_task(user, test_client):
+    pass
+    # TODO: extend this when ids will be received from routes

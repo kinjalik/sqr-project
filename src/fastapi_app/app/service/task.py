@@ -1,5 +1,5 @@
-from typing import List
 from datetime import datetime
+from typing import List
 
 from app.db_client import DatabaseClient
 from app.schemas.task import TaskCreateSchema, TaskModel

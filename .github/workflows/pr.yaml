@@ -19,7 +19,7 @@ jobs:
         run: echo "::add-matcher::.github/matchers/pylint.json"
 
       - name: Run pylint
-        run: make lint-pylint SILENT=1
+        run: make lint-pylint
 
   flake8-linter:
     runs-on: ubuntu-latest

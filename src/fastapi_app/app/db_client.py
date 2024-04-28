@@ -59,10 +59,16 @@ class DatabaseClient:
             if task:
                 task.is_completed = True
                 session.commit()
+                return True
+            return False
 
     def get_user(self, email: str, hashed_password: str):
         with self.make_session() as session:
-            return session.query(User).filter_by(email=email, hashed_password=hashed_password).first()
+            return (
+                session.query(User)
+                .filter_by(email=email, hashed_password=hashed_password)
+                .first()
+            )
 
     def delete_task(self, task_id: int):
         with self.make_session() as session:

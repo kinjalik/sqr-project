@@ -39,6 +39,16 @@ def credo_user1():
     }
 
 
+@pytest.fixture
+def credo_task1():
+    return {
+        TEXT: "SomeTestText",
+        DEADLINE: datetime.now() + timedelta(days=4),
+        PRIOR: 4,
+        IS_COMPETED: False,
+    }
+
+
 def get_user_raw_sql(db_session, credo_user):
     sql_query = text(f"SELECT * FROM users WHERE {EMAIL} = :{EMAIL}")
     result = db_session.execute(sql_query, {EMAIL: credo_user[EMAIL]}).fetchone()
@@ -110,6 +120,10 @@ async def test_add_task(db_client, db_session, credo_user1):
 
 
 async def test_complete_task(db_client, db_session, credo_user1):
+    is_complete = db_client.complete_task(777)
+    assert is_complete is not None
+    assert is_complete is False
+
     new_text = "SHOULD BE DONE"
     deadline = datetime.now() + timedelta(days=4)
     prior = 2
@@ -119,7 +133,9 @@ async def test_complete_task(db_client, db_session, credo_user1):
         db_session, credo_user1[EMAIL], new_text, deadline, prior
     )
 
-    db_client.complete_task(task_id)
+    is_complete = db_client.complete_task(task_id)
+    assert is_complete is not None
+    assert is_complete is True
 
     result = get_task_raw_sql(db_session, task_id)
 
@@ -143,3 +159,38 @@ async def test_get_task(db_client, db_session, credo_user1):
     assert tasks[0].deadline == deadline
     assert tasks[0].prior == prior
     assert not tasks[0].is_completed
+
+
+async def test_get_user(db_client, db_session, credo_user1):
+    maybe_user = db_client.get_user(credo_user1[EMAIL], credo_user1[HASHED_PASSWORD])
+    assert maybe_user is None
+    add_user_raw_sql(db_session, credo_user1)
+    maybe_user = db_client.get_user(credo_user1[EMAIL], credo_user1[HASHED_PASSWORD])
+    assert maybe_user is not None
+    assert maybe_user.email == credo_user1[EMAIL]
+    assert maybe_user.hashed_password == credo_user1[HASHED_PASSWORD]
+
+
+async def test_delete_task(db_client, db_session, credo_user1, credo_task1):
+    is_delete = db_client.delete_task(777)
+    assert is_delete is not None
+    assert is_delete is False
+
+    add_user_raw_sql(db_session, credo_user1)
+    task_id = add_task_raw_sql(
+        db_session,
+        credo_user1[EMAIL],
+        credo_task1[TEXT],
+        credo_task1[DEADLINE],
+        credo_task1[PRIOR],
+        credo_task1[IS_COMPETED],
+    )
+    return_task = get_task_raw_sql(db_session, task_id)
+    assert return_task is not None
+
+    is_delete = db_client.delete_task(task_id)
+    assert is_delete is not None
+    assert is_delete is True
+
+    return_task = get_task_raw_sql(db_session, task_id)
+    assert return_task is None

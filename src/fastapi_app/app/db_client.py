@@ -91,6 +91,21 @@ class DatabaseClient:
             else:
                 raise ValueError("Task not Found")
 
+    def edit_task(self, task_id: int, text: str, deadline: datetime, prior: int):
+        with self.make_session() as session:
+            task = session.query(Task).filter_by(id=task_id).first()
+            if not task:
+                raise ValueError("Task does not exist")
+
+            if text is not None:
+                task.text = text
+            if deadline is not None:
+                task.deadline = deadline
+            if prior is not None:
+                task.prior = prior
+
+            session.commit()
+
     def delete_database(self):
         self.engine.dispose()
         db_file = self.config.replace("sqlite:///", "")

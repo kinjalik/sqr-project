@@ -5,6 +5,7 @@ from sqlalchemy import (Boolean, Column, DateTime, Integer, String,
                         create_engine)
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import declarative_base, sessionmaker
+import os
 
 Base = declarative_base()
 
@@ -33,7 +34,8 @@ class DatabaseConfig(BaseSettings):
 
 class DatabaseClient:
     def __init__(self, config: DatabaseConfig):
-        self.engine = create_engine(config.database_url)
+        self.config = config.database_url
+        self.engine = create_engine(self.config)
         self.make_session = sessionmaker(bind=self.engine)
         Base.metadata.create_all(self.engine)
 
@@ -82,3 +84,10 @@ class DatabaseClient:
                 session.commit()
                 return True
             return False
+
+    def delete_database(self):
+        self.engine.dispose()
+        db_file = self.config.replace('sqlite:///', '')
+
+        if os.path.exists(db_file):
+            os.remove(db_file)

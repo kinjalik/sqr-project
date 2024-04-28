@@ -1,21 +1,24 @@
 import pytest
 from _pytest.fixtures import fixture
 from app import di
-from app.db_client import DatabaseClient, DatabaseConfig
+from app.db_client import DatabaseClient, DatabaseConfig, Base
 from app.main import app
 from fastapi.testclient import TestClient
 
 
+@fixture(autouse=True)
 def db():
-    return DatabaseClient(DatabaseConfig(database_url="sqlite:///./test.db"))
+    client = DatabaseClient(DatabaseConfig(database_url="sqlite:///./test.db"))
+    return client
 
 
 @fixture(autouse=True)
-def test_client():
+def test_client(db):
     tapp = TestClient(app)
 
-    app.dependency_overrides[di.db_client] = db
-    return tapp
+    app.dependency_overrides[di.db_client] = lambda: db
+    yield tapp
+    db.delete_database()
 
 
 @pytest.mark.parametrize(

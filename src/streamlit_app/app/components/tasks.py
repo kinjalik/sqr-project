@@ -1,3 +1,4 @@
+import datetime
 from typing import Literal
 
 import requests
@@ -6,12 +7,12 @@ import streamlit as st
 api = None
 
 
-def _create_task(text, deadline, priority):
+def _create_task(text: str, deadline: datetime.datetime, priority: int):
     url = f"{api}/task"
     data = {
         "user": st.session_state.current_user,
         "text": text,
-        "deadline": deadline,
+        "deadline": deadline.strftime("%Y.%m.%d %H:%M:%S"),
         "prior": priority,
     }
     response = requests.post(url, json=data)
@@ -68,7 +69,10 @@ def _task_form(id: str | None, mode: Literal["show", "edit"]):
         priority = st.number_input(
             "Priority", min_value=1, max_value=5, value=3, disabled=mode == "show"
         )
-        is_completed = st.checkbox("Is Completed?", disabled=mode == "show")
+        if mode == "edit":
+            is_completed = st.checkbox("Is Completed?", disabled=mode == "show")
+        else:
+            is_completed = False
 
         l_col, r_col = st.columns([0.1, 0.9])
         if mode == "edit":
@@ -78,11 +82,12 @@ def _task_form(id: str | None, mode: Literal["show", "edit"]):
                 cancel_submitted = st.form_submit_button("Cancel")
 
             if save_submitted:
-                success = (
-                    _edit_task(id, text, deadline, priority, is_completed)
-                    if id
-                    else _create_task(text, deadline, priority)
-                )
+                success = None
+                if id is not None:
+                    success = _edit_task(id, text, deadline, priority, is_completed)
+                else:
+                    success = _create_task(text, deadline, priority)
+                st.toast(success)
                 if success:
                     st.toast("Saved successfully", icon="✔")
                     st.session_state[f"task_mode_{id}"] = "show"
@@ -92,7 +97,7 @@ def _task_form(id: str | None, mode: Literal["show", "edit"]):
             if cancel_submitted:
                 st.session_state[f"task_mode_{id}"] = "show"
                 st.rerun()
-        elif mode == "show":
+        if mode == "show":
             with l_col:
                 edit_submitted = st.form_submit_button("Edit")
             with r_col:
@@ -116,9 +121,9 @@ def _tasks_form():
         with st.expander(task["id"]):
             _task_form(task["id"], st.session_state[f"task_mode_{task['id']}"])
 
-    add_task = st.button("Add Task")
-    if add_task:
-        _task_form(None, "edit")
+    # add_task = st.button("Add Task")
+    # if add_task:
+    _task_form(None, "edit")
 
 
 def tasks(api_url: str):

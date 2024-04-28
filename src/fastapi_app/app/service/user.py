@@ -1,5 +1,5 @@
 from app.db_client import DatabaseClient
-from app.utils import password_hash
+from app.service.utils import password_hash, password_verification
 
 
 async def create_user(email: str, hashed_password: str, db_client: DatabaseClient):
@@ -9,7 +9,6 @@ async def create_user(email: str, hashed_password: str, db_client: DatabaseClien
 
 async def get_user(email: str, hashed_password: str, db_client: DatabaseClient) -> str:
     user = db_client.get_user(email=email)
-    if user is None:
+    if user is None or not password_verification(hashed_password, user.hashed_password):
         raise ValueError
-    user.hashed_password[:16]
     return user.email

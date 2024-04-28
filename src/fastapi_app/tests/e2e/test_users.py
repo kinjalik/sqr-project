@@ -42,6 +42,11 @@ async def test_user_register(test_client, email, password):
     assert response.status_code == 400
 
 
+async def test_health(test_client):
+    response = test_client.get("/health")
+    assert response.status_code == 200
+
+
 @pytest.mark.parametrize(
     "email, password, status_code",
     [("test_1@mail.com", "test_passwd1", 200), ("test_2@mail.ru", "test_passwd3", 200)],

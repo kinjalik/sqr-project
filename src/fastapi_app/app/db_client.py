@@ -51,8 +51,7 @@ class DatabaseClient:
                 session.add(new_user)
                 session.commit()
         except IntegrityError as err:
-            print(err)
-            raise ValueError("User already exist")
+            raise ValueError("User already exist") from err
 
     def get_tasks(self, user: str):
         with self.make_session() as session:

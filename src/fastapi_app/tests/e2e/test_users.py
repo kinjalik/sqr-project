@@ -1,7 +1,7 @@
 import pytest
 from _pytest.fixtures import fixture
 from app import di
-from app.db_client import Base, DatabaseClient, DatabaseConfig
+from app.db_client import DatabaseClient, DatabaseConfig
 from app.main import app
 from fastapi.testclient import TestClient
 

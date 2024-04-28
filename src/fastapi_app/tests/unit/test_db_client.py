@@ -165,10 +165,10 @@ async def test_get_task(db_client, db_session, credo_user1):
 
 
 async def test_get_user(db_client, db_session, credo_user1):
-    maybe_user = db_client.get_user(credo_user1[EMAIL], credo_user1[HASHED_PASSWORD])
+    maybe_user = db_client.get_user(credo_user1[EMAIL])
     assert maybe_user is None
     add_user_raw_sql(db_session, credo_user1)
-    maybe_user = db_client.get_user(credo_user1[EMAIL], credo_user1[HASHED_PASSWORD])
+    maybe_user = db_client.get_user(credo_user1[EMAIL])
     assert maybe_user is not None
     assert maybe_user.email == credo_user1[EMAIL]
     assert maybe_user.hashed_password == credo_user1[HASHED_PASSWORD]

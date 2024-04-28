@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List
 
 from app.db_client import DatabaseClient
-from app.schemas.task import TaskCreateSchema, TaskModel
+from app.schemas.task import TaskCreateSchema, TaskEditSchema, TaskModel
 
 
 async def create_task(task_data: TaskCreateSchema, db_client: DatabaseClient):
@@ -24,3 +24,12 @@ async def complete_task(task_id: str, db_client: DatabaseClient):
 
 async def get_tasks(user: str, db_client: DatabaseClient) -> List[TaskModel]:
     return db_client.get_tasks(user)
+
+
+async def edit_task(task_id: str, task_data: TaskEditSchema, db_client: DatabaseClient):
+    return db_client.edit_task(
+        task_id,
+        task_data.text,
+        datetime.strptime(task_data.deadline, "%Y.%m.%d %H:%M:%S"),
+        task_data.prior,
+    )

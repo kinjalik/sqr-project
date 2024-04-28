@@ -1,15 +1,13 @@
 import requests
 import streamlit as st
 
-from fastapi_app.app.shcemas.user import UserDataSchema
-
 api = None
 
 
 def _register_user(username, password):
     url = f"{api}/register"
     # TODO: password should be hashed on backend
-    data: UserDataSchema = {
+    data = {
         "email": username,
         "hashed_password": password,
     }
@@ -28,7 +26,7 @@ def _register_user(username, password):
 
 def _login_user(username, password):
     url = f"{api}/login"
-    data: UserDataSchema = {"email": username, "hashed_password": password}
+    data = {"email": username, "hashed_password": password}
     response = requests.post(url, json=data)
     if response.status_code == 200:
         st.toast("Successfully logged in", icon="✔")
@@ -69,7 +67,6 @@ def _auth_form():
             st.rerun()
 
 
-# TODO: jwt?
 def login(api_url: str):
     global api
     api = api_url

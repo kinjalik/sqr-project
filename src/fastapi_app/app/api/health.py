@@ -7,4 +7,4 @@ router = APIRouter()
     "/health",
 )
 async def healthcheck():
-    return Response(status_code=200, content='ok')
+    return Response(status_code=200, content="ok")

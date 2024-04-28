@@ -92,3 +92,22 @@ async def complete_task(
             status_code=404, content={"error": "the task was not found"}
         )
     return Response(status_code=204)
+
+
+@router.put(
+    "task/{id}",
+)
+async def edit_task(
+    task_edit_data: TaskCreateSchema,
+    db_client: DatabaseClient = Depends(di.db_client),
+):
+    try:
+        await service.edit_task(
+            task_data=task_edit_data,
+            db_client=db_client,
+        )
+    except ValueError:
+        return responses.JSONResponse(
+            status_code=404, content={"error": "the task was not found"}
+        )
+    return Response(status_code=204)

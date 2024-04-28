@@ -5,9 +5,9 @@ Web app setup
 
 import typing as t
 
+from app.api.health import router as healthcheck_api
 from app.api.task import router as task_api
 from app.api.user import router as user_api
-from app.api.health import router as healthcheck_api
 from app.db_client import DatabaseClient, DatabaseConfig
 from fastapi import FastAPI
 

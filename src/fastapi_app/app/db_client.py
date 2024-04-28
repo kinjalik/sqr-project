@@ -59,6 +59,8 @@ class DatabaseClient:
             if task:
                 task.is_completed = True
                 session.commit()
+                return True
+            return False
 
     def get_user(self, email: str, hashed_password: str):
         with self.make_session() as session:

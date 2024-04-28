@@ -120,6 +120,10 @@ async def test_add_task(db_client, db_session, credo_user1):
 
 
 async def test_complete_task(db_client, db_session, credo_user1):
+    is_complete = db_client.complete_task(777)
+    assert is_complete is not None
+    assert is_complete is False
+
     new_text = "SHOULD BE DONE"
     deadline = datetime.now() + timedelta(days=4)
     prior = 2
@@ -129,7 +133,9 @@ async def test_complete_task(db_client, db_session, credo_user1):
         db_session, credo_user1[EMAIL], new_text, deadline, prior
     )
 
-    db_client.complete_task(task_id)
+    is_complete = db_client.complete_task(task_id)
+    assert is_complete is not None
+    assert is_complete is True
 
     result = get_task_raw_sql(db_session, task_id)
 
@@ -166,6 +172,10 @@ async def test_get_user(db_client, db_session, credo_user1):
 
 
 async def test_delete_task(db_client, db_session, credo_user1, credo_task1):
+    is_delete = db_client.delete_task(777)
+    assert is_delete is not None
+    assert is_delete is False
+
     add_user_raw_sql(db_session, credo_user1)
     task_id = add_task_raw_sql(
         db_session,
@@ -177,6 +187,10 @@ async def test_delete_task(db_client, db_session, credo_user1, credo_task1):
     )
     return_task = get_task_raw_sql(db_session, task_id)
     assert return_task is not None
-    db_client.delete_task(task_id)
+
+    is_delete = db_client.delete_task(task_id)
+    assert is_delete is not None
+    assert is_delete is True
+
     return_task = get_task_raw_sql(db_session, task_id)
     assert return_task is None

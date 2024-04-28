@@ -41,7 +41,9 @@ def _get_tasks():
     if response.status_code == 200:
         tasks = response.json().get("tasks")
         for task in tasks:
-            task["deadline"] = datetime.datetime.strptime(task["deadline"], "%Y.%m.%d %H:%M:%S")
+            task["deadline"] = datetime.datetime.strptime(
+                task["deadline"], "%Y.%m.%d %H:%M:%S"
+            )
         return tasks
     else:
         print(response.text)
@@ -64,7 +66,8 @@ def _edit_task(id, text, deadline, prior, is_completed):
     else:
         print(response.text)
         return False
-    
+
+
 def _complete_task(id):
     url = f"{api}/task/{id}/complete"
     response = requests.put(url, timeout=5)
@@ -73,23 +76,33 @@ def _complete_task(id):
     else:
         return False
 
+
 def _switch_task_mode(id: int):
     if id in st.session_state.edited_tasks:
         st.session_state.edited_tasks.pop(id)
     else:
         st.session_state.edited_tasks[id] = st.session_state.shown_tasks[id]
 
+
 def _task_form(task: dict, mode: Literal["show", "edit"]):
     id = task.get("id")
     creating = id is NO_ID
     with st.form(key=f"task_form_{id}"):
         text = st.text_input("Task Text", task.get("text"), disabled=mode == "show")
-        deadline = st.date_input("Deadline", task.get("deadline"), disabled=mode == "show")
+        deadline = st.date_input(
+            "Deadline", task.get("deadline"), disabled=mode == "show"
+        )
         prior = st.number_input(
-            "Priority", min_value=1, max_value=5, value=task.get("prior"), disabled=mode == "show"
+            "Priority",
+            min_value=1,
+            max_value=5,
+            value=task.get("prior"),
+            disabled=mode == "show",
         )
         if not creating:
-            is_completed = st.checkbox("Is Completed?", task.get("is_completed"), disabled=mode == "show")
+            is_completed = st.checkbox(
+                "Is Completed?", task.get("is_completed"), disabled=mode == "show"
+            )
 
         if mode == "edit":
             l_col, r_col = st.columns([0.1, 0.9])
@@ -99,7 +112,7 @@ def _task_form(task: dict, mode: Literal["show", "edit"]):
                 cancel_submitted = st.form_submit_button("Cancel")
 
             if save_submitted:
-                if text == None or text == "":
+                if text is None or text == "":
                     st.error("Task text cannot be empty", icon="❌")
                     return
                 if prior is None or (prior < 1 or prior > 5):
@@ -110,7 +123,9 @@ def _task_form(task: dict, mode: Literal["show", "edit"]):
                     id = _create_task(text, deadline, prior)
                     success = id is not NO_ID
                     if success:
-                        st.session_state.edited_tasks[id] = st.session_state.edited_tasks.pop(NO_ID)
+                        st.session_state.edited_tasks[id] = (
+                            st.session_state.edited_tasks.pop(NO_ID)
+                        )
                 else:
                     success = _edit_task(id, text, deadline, prior, is_completed)
 
@@ -153,7 +168,7 @@ def _task_form(task: dict, mode: Literal["show", "edit"]):
 
 def _tasks_form():
     st.header("Tasks")
-    
+
     for _, task in st.session_state.edited_tasks.copy().items():
         _task_form(task, "edit")
 
@@ -162,7 +177,7 @@ def _tasks_form():
 
     add_task = st.button("Add Task", disabled=NO_ID in st.session_state.edited_tasks)
     if add_task:
-        task = { "id": NO_ID }
+        task = {"id": NO_ID}
         st.session_state.edited_tasks[task.get("id")] = task
         _task_form(task, "edit")
 
@@ -174,6 +189,10 @@ def tasks(api_url: str):
     if "current_user" in st.session_state:
         if st.session_state.get("edited_tasks") is None:
             st.session_state.edited_tasks = {}
-        st.session_state.shown_tasks = {task["id"]: task for task in _get_tasks() if task["id"] not in st.session_state.edited_tasks}
+        st.session_state.shown_tasks = {
+            task["id"]: task
+            for task in _get_tasks()
+            if task["id"] not in st.session_state.edited_tasks
+        }
 
         _tasks_form()

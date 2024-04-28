@@ -61,6 +61,7 @@ class DatabaseClient:
                 session.query(Task)
                 .filter_by(user=user)
                 .order_by(Task.prior.desc())
+                .order_by(Task.deadline.asc())
                 .all()
             )
 

@@ -207,11 +207,23 @@ async def test_get_task_check_prior(db_client, db_session, credo_user1, credo_ta
     add_task_raw_sql(
         db_session, credo_user1[EMAIL], credo_task1[TEXT], credo_task1[DEADLINE], 3
     )
+    add_task_raw_sql(
+        db_session,
+        credo_user1[EMAIL],
+        credo_task1[TEXT],
+        credo_task1[DEADLINE] + timedelta(days=3),
+        3,
+    )
 
     tasks = db_client.get_tasks(credo_user1[EMAIL])
 
     assert tasks is not None
-    assert len(tasks) == 3
+    assert len(tasks) == 4
     assert tasks[0].prior == 3
-    assert tasks[1].prior == 2
-    assert tasks[2].prior == 1
+    assert tasks[0].deadline == credo_task1[DEADLINE]
+
+    assert tasks[1].prior == 3
+    assert tasks[1].deadline == credo_task1[DEADLINE] + timedelta(days=3)
+
+    assert tasks[2].prior == 2
+    assert tasks[3].prior == 1

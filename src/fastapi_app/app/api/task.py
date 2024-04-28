@@ -1,6 +1,6 @@
 from app import di
 from app.db_client import DatabaseClient
-from app.schemas.task import TaskCreateSchema
+from app.schemas.task import TaskCreateSchema, TaskEditSchema
 from app.service import task as service
 from fastapi import APIRouter, Depends, Request, Response, responses
 
@@ -95,14 +95,16 @@ async def complete_task(
 
 
 @router.put(
-    "task/{id}",
+    "/task/{id}",
 )
 async def edit_task(
-    task_edit_data: TaskCreateSchema,
+    id: str,
+    task_edit_data: TaskEditSchema,
     db_client: DatabaseClient = Depends(di.db_client),
 ):
     try:
         await service.edit_task(
+            task_id=id,
             task_data=task_edit_data,
             db_client=db_client,
         )

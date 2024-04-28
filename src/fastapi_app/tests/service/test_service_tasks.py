@@ -4,9 +4,9 @@ from unittest.mock import MagicMock
 
 import pytest
 from _pytest.fixtures import fixture
-from app.schemas.task import TaskCreateSchema
+from app.schemas.task import TaskCreateSchema, TaskEditSchema
 from app.schemas.user import UserDataSchema
-from app.service.task import complete_task, create_task, delete_task
+from app.service.task import complete_task, create_task, delete_task, edit_task
 
 
 @fixture()
@@ -60,3 +60,21 @@ async def test_get_tasks(user, task_id, db_mock):
 async def test_complete_task(task_id, db_mock):
     await complete_task(task_id, db_mock)
     db_mock.complete_task.assert_called_once_with(task_id)
+
+
+@pytest.mark.parametrize(("task_id"), [(1), (2)])
+@pytest.mark.parametrize(
+    "text, prior", [("task1", "1"), ("task2", "2"), ("task3", "3")]
+)
+async def test_task_edit(task_id, text, prior, db_mock):
+    date = datetime.now()
+    task = TaskEditSchema(
+        text=text, deadline=date.strftime("%Y.%m.%d %H:%M:%S"), prior=prior
+    )
+    await edit_task(task_id=task_id, task_data=task, db_client=db_mock)
+    db_mock.edit_task.assert_called_once_with(
+        task_id,
+        task.text,
+        datetime.strptime(task.deadline, "%Y.%m.%d %H:%M:%S"),
+        task.prior,
+    )

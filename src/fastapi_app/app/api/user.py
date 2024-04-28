@@ -2,7 +2,7 @@ from app import di
 from app.db_client import DatabaseClient
 from app.schemas.user import UserDataSchema
 from app.service import user as service
-from fastapi import APIRouter, Depends, Request, Response
+from fastapi import APIRouter, Depends, Request, Response, responses
 
 router = APIRouter()
 
@@ -41,6 +41,6 @@ async def login(
             user_data.email, user_data.hashed_password, db_client=db_client
         )
     except ValueError:
-        return Response(status_code=404, content={"error": "the user was not found"})
+        return responses.JSONResponse(status_code=404, content={"error": "the user was not found"})
 
     return Response(status_code=200)

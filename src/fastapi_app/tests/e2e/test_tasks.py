@@ -174,11 +174,19 @@ async def test_edit_task(user, test_client, text, prior):
     task_id = json.loads(response.content)["task_id"]
     assert task_id
 
+    date = datetime.now().replace(microsecond=0) - timedelta(days=4)
     new_data = {
         "text": data["text"] + "NEW_TEXT",
-        "deadline": data["deadline"],
+        "deadline": date.strftime("%Y.%m.%d %H:%M:%S"),
         "prior": data["prior"] + 1,
     }
+
+    response = test_client.put(f"/task/{task_id}", json=new_data)
+    assert response.status_code == 404
+
+    date = datetime.now().replace(microsecond=0) + timedelta(days=4)
+    new_data["deadline"] = date.strftime("%Y.%m.%d %H:%M:%S")
+
     response = test_client.put(f"/task/{task_id}", json=new_data)
     assert response.status_code == 204
 

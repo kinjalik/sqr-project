@@ -1,6 +1,6 @@
 from app import di
 from app.db_client import DatabaseClient
-from app.schemas.task import TaskCreateSchema
+from app.schemas.task import TaskCreateSchema, TaskEditSchema
 from app.service import task as service
 from fastapi import APIRouter, Depends, Request, Response, responses
 
@@ -85,6 +85,27 @@ async def complete_task(
     try:
         await service.complete_task(
             task_id=id,
+            db_client=db_client,
+        )
+    except ValueError:
+        return responses.JSONResponse(
+            status_code=404, content={"error": "the task was not found"}
+        )
+    return Response(status_code=204)
+
+
+@router.put(
+    "/task/{id}",
+)
+async def edit_task(
+    id: str,
+    task_edit_data: TaskEditSchema,
+    db_client: DatabaseClient = Depends(di.db_client),
+):
+    try:
+        await service.edit_task(
+            task_id=id,
+            task_data=task_edit_data,
             db_client=db_client,
         )
     except ValueError:

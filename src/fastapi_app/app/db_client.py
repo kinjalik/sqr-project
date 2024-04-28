@@ -65,8 +65,8 @@ class DatabaseClient:
             if task:
                 task.is_completed = True
                 session.commit()
-                return True
-            return False
+            else:
+                raise ValueError("Task not Found")
 
     def get_user(self, email: str, hashed_password: str):
         with self.make_session() as session:
@@ -82,8 +82,8 @@ class DatabaseClient:
             if task:
                 session.delete(task)
                 session.commit()
-                return True
-            return False
+            else:
+                raise ValueError("Task not Found")
 
     def delete_database(self):
         self.engine.dispose()

@@ -194,3 +194,24 @@ async def test_delete_task(db_client, db_session, credo_user1, credo_task1):
 
     return_task = get_task_raw_sql(db_session, task_id)
     assert return_task is None
+
+
+async def test_get_task_check_prior(db_client, db_session, credo_user1, credo_task1):
+    add_user_raw_sql(db_session, credo_user1)
+    add_task_raw_sql(
+        db_session, credo_user1[EMAIL], credo_task1[TEXT], credo_task1[DEADLINE], 2
+    )
+    add_task_raw_sql(
+        db_session, credo_user1[EMAIL], credo_task1[TEXT], credo_task1[DEADLINE], 1
+    )
+    add_task_raw_sql(
+        db_session, credo_user1[EMAIL], credo_task1[TEXT], credo_task1[DEADLINE], 3
+    )
+
+    tasks = db_client.get_tasks(credo_user1[EMAIL])
+
+    assert tasks is not None
+    assert len(tasks) == 3
+    assert tasks[0].prior == 3
+    assert tasks[1].prior == 2
+    assert tasks[2].prior == 1

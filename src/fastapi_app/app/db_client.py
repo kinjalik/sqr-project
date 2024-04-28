@@ -57,7 +57,13 @@ class DatabaseClient:
 
     def get_tasks(self, user: str):
         with self.make_session() as session:
-            return session.query(Task).filter_by(user=user).all()
+            return (
+                session.query(Task)
+                .filter_by(user=user)
+                .order_by(Task.prior.desc())
+                .order_by(Task.deadline.asc())
+                .all()
+            )
 
     def complete_task(self, task_id: int):
         with self.make_session() as session:

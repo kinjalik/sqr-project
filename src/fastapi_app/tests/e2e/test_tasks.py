@@ -1,21 +1,18 @@
+import json
 from datetime import datetime
-from unittest.mock import MagicMock
 
 import pytest
 from _pytest.fixtures import fixture
 from app import di
+from app.db_client import DatabaseClient, DatabaseConfig
 from app.main import app
 from app.schemas.user import UserDataSchema
 from fastapi.testclient import TestClient
 
 
-def _db_mock():
-    return MagicMock()
-
-
 @fixture()
-def db_mock():
-    return _db_mock()
+def db():
+    return DatabaseClient(DatabaseConfig(database_url="sqlite:///./test.db"))
 
 
 @fixture()
@@ -29,16 +26,17 @@ def another_user():
 
 
 @fixture()
-def test_client(user, db_mock):
+def test_client(user, db):
     tapp = TestClient(app)
 
-    app.dependency_overrides[di.db_client] = lambda: db_mock
+    app.dependency_overrides[di.db_client] = lambda: db
     app.state.user = user.email
-    return tapp
+    yield tapp
+    db.delete_database()
 
 
 @pytest.mark.parametrize("text, prior", [("test1", 1), ("test2", 2)])
-async def test_create_task(user, test_client, text, prior, db_mock):
+async def test_create_task(user, test_client, text, prior):
     date = datetime.now().replace(microsecond=0)
     data = {
         "user": user.email,
@@ -50,22 +48,106 @@ async def test_create_task(user, test_client, text, prior, db_mock):
     response = test_client.post("/task", json=data)
 
     assert response.status_code == 201
-    db_mock.add_task.assert_called_once_with(user.email, text, date, prior)
+    print(response.content)
+    print(json.loads(response.content)["task_id"])
+    assert json.loads(response.content)["task_id"]
 
 
-@pytest.mark.parametrize("task_id", ["1", "2"])
-async def test_delete_task(test_client, task_id, db_mock):
+@pytest.mark.parametrize("text, prior", [("test1", 1), ("test2", 2)])
+async def test_delete_task(user, test_client, text, prior):
+    date = datetime.now().replace(microsecond=0)
+
+    data = {
+        "user": user.email,
+        "text": text,
+        "deadline": date.strftime("%Y.%m.%d %H:%M:%S"),
+        "prior": prior,
+    }
+
+    response = test_client.post("/task", json=data)
+    assert response.status_code == 201
+    task_id = json.loads(response.content)["task_id"]
+    assert task_id
+
     response = test_client.delete(f"/task/{task_id}")
     assert response.status_code == 204
-    db_mock.delete_task.assert_called_once_with(task_id)
+
+    response = test_client.delete(f"/task/{task_id}")
+    assert response.status_code == 404
 
 
-async def test_get_tasks(user, test_client, db_mock):
+@pytest.mark.parametrize("text, prior", [("test1", 1), ("test2", 2)])
+async def test_get_tasks(user, test_client, text, prior):
+    date = datetime.now().replace(microsecond=0)
+
+    data = {
+        "user": user.email,
+        "text": text,
+        "deadline": date.strftime("%Y.%m.%d %H:%M:%S"),
+        "prior": prior,
+    }
+
+    response = test_client.post("/task", json=data)
+    assert response.status_code == 201
+    task_id = json.loads(response.content)["task_id"]
+    assert task_id
+
     response = test_client.get("/tasks")
     assert response.status_code == 200
-    db_mock.get_tasks.assert_called_once_with(user.email)
+    serialized_json = json.loads(response.content)
+
+    assert serialized_json["tasks"]
+    assert len(serialized_json["tasks"]) == 1
+    for data in serialized_json["tasks"]:
+        assert data["id"]
+        assert data["id"] == task_id
+        assert data["user"]
+        assert data["deadline"]
+        assert data["prior"]
+        assert not data["is_completed"]
 
 
-async def test_complete_task(user, test_client):
-    pass
-    # TODO: extend this when ids will be received from routes
+@pytest.mark.parametrize("text, prior", [("test1", 1), ("test2", 2)])
+async def test_complete_task(user, test_client, text, prior):
+    date = datetime.now().replace(microsecond=0)
+
+    data = {
+        "user": user.email,
+        "text": text,
+        "deadline": date.strftime("%Y.%m.%d %H:%M:%S"),
+        "prior": prior,
+    }
+
+    response = test_client.post("/task", json=data)
+    assert response.status_code == 201
+    task_id = json.loads(response.content)["task_id"]
+    assert task_id
+
+    response = test_client.get("/tasks")
+    assert response.status_code == 200
+    serialized_json = json.loads(response.content)
+
+    assert serialized_json["tasks"]
+    assert len(serialized_json["tasks"]) == 1
+    for data in serialized_json["tasks"]:
+        assert data["id"]
+        if data["id"] == task_id:
+            assert not data["is_completed"]
+
+    response = test_client.put(f"/task/{task_id+1}/complete")
+    assert response.status_code == 404
+
+    response = test_client.put(f"/task/{task_id}/complete")
+    assert response.status_code == 204
+
+    response = test_client.get("/tasks")
+    assert response.status_code == 200
+    serialized_json = json.loads(response.content)
+
+    assert serialized_json["tasks"]
+    assert len(serialized_json["tasks"]) == 1
+    for data in serialized_json["tasks"]:
+        assert data["id"]
+        if data["id"] == task_id:
+            assert data["is_completed"]
+            assert data["is_completed"]

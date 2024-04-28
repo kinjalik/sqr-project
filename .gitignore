@@ -3,3 +3,4 @@
 *.junit.xml
 *.sarif
 **/*.db
+*.dccache

@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 
 from pydantic_settings import BaseSettings
@@ -33,7 +34,8 @@ class DatabaseConfig(BaseSettings):
 
 class DatabaseClient:
     def __init__(self, config: DatabaseConfig):
-        self.engine = create_engine(config.database_url)
+        self.config = config.database_url
+        self.engine = create_engine(self.config)
         self.make_session = sessionmaker(bind=self.engine)
         Base.metadata.create_all(self.engine)
 
@@ -55,7 +57,13 @@ class DatabaseClient:
 
     def get_tasks(self, user: str):
         with self.make_session() as session:
-            return session.query(Task).filter_by(user=user).all()
+            return (
+                session.query(Task)
+                .filter_by(user=user)
+                .order_by(Task.prior.desc())
+                .order_by(Task.deadline.asc())
+                .all()
+            )
 
     def complete_task(self, task_id: int):
         with self.make_session() as session:
@@ -63,8 +71,8 @@ class DatabaseClient:
             if task:
                 task.is_completed = True
                 session.commit()
-                return True
-            return False
+            else:
+                raise ValueError("Task not Found")
 
     def get_user(self, email: str, hashed_password: str):
         with self.make_session() as session:
@@ -80,5 +88,27 @@ class DatabaseClient:
             if task:
                 session.delete(task)
                 session.commit()
-                return True
-            return False
+            else:
+                raise ValueError("Task not Found")
+
+    def edit_task(self, task_id: int, text: str, deadline: datetime, prior: int):
+        with self.make_session() as session:
+            task = session.query(Task).filter_by(id=task_id).first()
+            if not task:
+                raise ValueError("Task does not exist")
+
+            if text is not None:
+                task.text = text
+            if deadline is not None:
+                task.deadline = deadline
+            if prior is not None:
+                task.prior = prior
+
+            session.commit()
+
+    def delete_database(self):
+        self.engine.dispose()
+        db_file = self.config.replace("sqlite:///", "")
+
+        if os.path.exists(db_file):
+            os.remove(db_file)

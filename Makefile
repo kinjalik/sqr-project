@@ -39,12 +39,12 @@ lint-check:
 
 lint-pylint:
 	. venv/bin/activate; cd src; \
-	pylint streamlit_app --rcfile=$(ROOT_DIR)/src/.pylintrc $(ARGS); \
-	pylint fastapi_app/app --rcfile=$(ROOT_DIR)/src/.pylintrc $(ARGS); \
+	pylint streamlit_app --fail-under=7 --rcfile=$(ROOT_DIR)/src/.pylintrc $(ARGS) && \
+	pylint fastapi_app/app --fail-under=10 --rcfile=$(ROOT_DIR)/src/.pylintrc $(ARGS); \
 
 lint-flake8:
 	. venv/bin/activate; cd src; \
-	flake8 streamlit_app; \
+	flake8 streamlit_app && \
 	flake8 fastapi_app; \
 
 lint-refurb:

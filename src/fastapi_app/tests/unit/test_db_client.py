@@ -120,9 +120,11 @@ async def test_add_task(db_client, db_session, credo_user1):
 
 
 async def test_complete_task(db_client, db_session, credo_user1):
-    is_complete = db_client.complete_task(777)
-    assert is_complete is not None
-    assert is_complete is False
+    try:
+        db_client.complete_task(777)
+        assert False
+    except ValueError:
+        pass
 
     new_text = "SHOULD BE DONE"
     deadline = datetime.now() + timedelta(days=4)
@@ -133,9 +135,10 @@ async def test_complete_task(db_client, db_session, credo_user1):
         db_session, credo_user1[EMAIL], new_text, deadline, prior
     )
 
-    is_complete = db_client.complete_task(task_id)
-    assert is_complete is not None
-    assert is_complete is True
+    try:
+        db_client.complete_task(task_id)
+    except ValueError:
+        assert False and "Value error should not happen for existing task"
 
     result = get_task_raw_sql(db_session, task_id)
 
@@ -172,9 +175,11 @@ async def test_get_user(db_client, db_session, credo_user1):
 
 
 async def test_delete_task(db_client, db_session, credo_user1, credo_task1):
-    is_delete = db_client.delete_task(777)
-    assert is_delete is not None
-    assert is_delete is False
+    try:
+        db_client.delete_task(777)
+        assert False
+    except ValueError:
+        pass
 
     add_user_raw_sql(db_session, credo_user1)
     task_id = add_task_raw_sql(
@@ -188,9 +193,63 @@ async def test_delete_task(db_client, db_session, credo_user1, credo_task1):
     return_task = get_task_raw_sql(db_session, task_id)
     assert return_task is not None
 
-    is_delete = db_client.delete_task(task_id)
-    assert is_delete is not None
-    assert is_delete is True
+    try:
+        db_client.delete_task(task_id)
+    except ValueError:
+        assert False and "Value error should not happen for existing task"
 
     return_task = get_task_raw_sql(db_session, task_id)
     assert return_task is None
+
+
+async def test_get_task_check_prior(db_client, db_session, credo_user1, credo_task1):
+    add_user_raw_sql(db_session, credo_user1)
+    add_task_raw_sql(
+        db_session, credo_user1[EMAIL], credo_task1[TEXT], credo_task1[DEADLINE], 2
+    )
+    add_task_raw_sql(
+        db_session, credo_user1[EMAIL], credo_task1[TEXT], credo_task1[DEADLINE], 1
+    )
+    add_task_raw_sql(
+        db_session, credo_user1[EMAIL], credo_task1[TEXT], credo_task1[DEADLINE], 3
+    )
+    add_task_raw_sql(
+        db_session,
+        credo_user1[EMAIL],
+        credo_task1[TEXT],
+        credo_task1[DEADLINE] + timedelta(days=3),
+        3,
+    )
+
+    tasks = db_client.get_tasks(credo_user1[EMAIL])
+
+    assert tasks is not None
+    assert len(tasks) == 4
+    assert tasks[0].prior == 3
+    assert tasks[0].deadline == credo_task1[DEADLINE]
+
+    assert tasks[1].prior == 3
+    assert tasks[1].deadline == credo_task1[DEADLINE] + timedelta(days=3)
+
+    assert tasks[2].prior == 2
+    assert tasks[3].prior == 1
+
+
+async def test_edit_task(db_client, db_session, credo_user1, credo_task1):
+    add_user_raw_sql(db_session, credo_user1)
+    task_id = add_task_raw_sql(
+        db_session,
+        credo_user1[EMAIL],
+        credo_task1[TEXT],
+        credo_task1[DEADLINE],
+        credo_task1[PRIOR],
+    )
+
+    new_text = "NEW_TEXT"
+    new_deadline = datetime.now() + timedelta(days=777)
+    new_prior = 82347
+    db_client.edit_task(task_id, new_text, new_deadline, new_prior)
+    edited_task = get_task_raw_sql(db_session, task_id)
+    assert edited_task[2] == new_text
+    assert edited_task[3] == str(new_deadline)
+    assert edited_task[4] == new_prior

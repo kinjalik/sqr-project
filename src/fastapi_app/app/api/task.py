@@ -15,14 +15,14 @@ async def create_task(
     db_client: DatabaseClient = Depends(di.db_client),
 ):
     try:
-        await service.create_task(
+        task_id = await service.create_task(
             task_data=task_create_data,
             db_client=db_client,
         )
     except ValueError:
         return Response(status_code=400, content={"error": "the user was not found"})
 
-    return Response(status_code=201)
+    return responses.JSONResponse(status_code=201, content={"task_id": task_id})
 
 
 @router.delete(
@@ -38,7 +38,9 @@ async def delete_task(
             db_client=db_client,
         )
     except ValueError:
-        return Response(status_code=404, content={"error": "the task was not found"})
+        return responses.JSONResponse(
+            status_code=404, content={"error": "the task was not found"}
+        )
 
     return Response(status_code=204)
 
@@ -51,14 +53,26 @@ async def get_tasks(
     db_client: DatabaseClient = Depends(di.db_client),
 ):
     try:
-        await service.get_tasks(
+        tasks = await service.get_tasks(
             user=request.app.state.user,
             db_client=db_client,
         )
     except ValueError:
         return Response(status_code=404, content={"error": "the user was not found"})
 
-    return responses.JSONResponse(content={})
+    serialized_tasks = list()
+    for task in tasks:
+        serialized_tasks.append(
+            {
+                "id": task.id,
+                "user": task.user,
+                "text": task.text,
+                "deadline": task.deadline.strftime("%Y.%m.%d %H:%M:%S"),
+                "prior": task.prior,
+                "is_completed": task.is_completed,
+            }
+        )
+    return responses.JSONResponse(content={"tasks": serialized_tasks})
 
 
 @router.put(
@@ -74,6 +88,7 @@ async def complete_task(
             db_client=db_client,
         )
     except ValueError:
-        return Response(status_code=404, content={"error": "the task was not found"})
-
+        return responses.JSONResponse(
+            status_code=404, content={"error": "the task was not found"}
+        )
     return Response(status_code=204)

@@ -2,10 +2,9 @@ import streamlit as st
 from components.login import login
 from components.tasks import tasks
 
-back_url = "http://localhost:8000"
+back_url = "http://fastapi_app:8000"
 
 
-# TODO: add caching or something
 def main():
     st.title("InnoTasks")
 

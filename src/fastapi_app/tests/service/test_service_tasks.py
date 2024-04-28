@@ -29,14 +29,17 @@ async def test_task_add(email, password, text, prior, db_mock):
 
     generated_id = randint(0, 100)
 
-    db_mock.create_task.return_value = randint(0, 100)
+    db_mock.add_task.return_value = generated_id
 
     id = await create_task(task_data=task, db_client=db_mock)
 
-    assert id
+    assert id is not None
     assert id == generated_id
-    db_mock.create_task.assert_called_with(
-        user.email, task.text, task.deadline, task.prior
+    db_mock.add_task.assert_called_with(
+        user.email,
+        task.text,
+        datetime.strptime(task.deadline, "%Y.%m.%d %H:%M:%S"),
+        task.prior,
     )
 
 

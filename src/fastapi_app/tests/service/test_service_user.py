@@ -25,4 +25,4 @@ async def test_add_user(email, password, db_mock):
 )
 async def test_get_user(email, password, db_mock):
     await get_user(email, password, db_mock)
-    db_mock.get_user.assert_called_once_with(email, password)
+    db_mock.get_user.assert_called_once_with(email=email, hashed_password=password)

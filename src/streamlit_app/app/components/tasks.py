@@ -3,14 +3,12 @@ from typing import Literal
 import requests
 import streamlit as st
 
-from fastapi_app.app.shcemas.task import TaskCreateSchema, TaskModel
-
 api = None
 
 
 def _create_task(text, deadline, priority):
     url = f"{api}/task"
-    data: TaskCreateSchema = {
+    data = {
         "user": st.session_state.current_user,
         "text": text,
         "deadline": deadline,
@@ -47,7 +45,7 @@ def _get_tasks():
 
 def _edit_task(id, text, deadline, priority, is_completed):
     url = f"{api}/task"
-    data: TaskModel = {
+    data = {
         "id": id,
         "user": st.session_state.current_user,
         "text": text,
@@ -68,9 +66,7 @@ def _task_form(id: str | None, mode: Literal["show", "edit"]):
         text = st.text_input("Task Text", disabled=mode == "show")
         deadline = st.date_input("Deadline", disabled=mode == "show")
         priority = st.number_input(
-            "Priority",
-            min_value=1, max_value=5, value=3,
-            disabled=mode == "show"
+            "Priority", min_value=1, max_value=5, value=3, disabled=mode == "show"
         )
         is_completed = st.checkbox("Is Completed?", disabled=mode == "show")
 

@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 
 from pydantic_settings import BaseSettings
@@ -5,7 +6,6 @@ from sqlalchemy import (Boolean, Column, DateTime, Integer, String,
                         create_engine)
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import declarative_base, sessionmaker
-import os
 
 Base = declarative_base()
 
@@ -87,7 +87,7 @@ class DatabaseClient:
 
     def delete_database(self):
         self.engine.dispose()
-        db_file = self.config.replace('sqlite:///', '')
+        db_file = self.config.replace("sqlite:///", "")
 
         if os.path.exists(db_file):
             os.remove(db_file)

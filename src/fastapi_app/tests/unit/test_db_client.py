@@ -45,7 +45,7 @@ def credo_task1():
         TEXT: "SomeTestText",
         DEADLINE: datetime.now() + timedelta(days=4),
         PRIOR: 4,
-        IS_COMPETED: False
+        IS_COMPETED: False,
     }
 
 
@@ -167,11 +167,14 @@ async def test_get_user(db_client, db_session, credo_user1):
 
 async def test_delete_task(db_client, db_session, credo_user1, credo_task1):
     add_user_raw_sql(db_session, credo_user1)
-    task_id = add_task_raw_sql(db_session, credo_user1[EMAIL],
-                               credo_task1[TEXT],
-                               credo_task1[DEADLINE],
-                               credo_task1[PRIOR],
-                               credo_task1[IS_COMPETED])
+    task_id = add_task_raw_sql(
+        db_session,
+        credo_user1[EMAIL],
+        credo_task1[TEXT],
+        credo_task1[DEADLINE],
+        credo_task1[PRIOR],
+        credo_task1[IS_COMPETED],
+    )
     return_task = get_task_raw_sql(db_session, task_id)
     assert return_task is not None
     db_client.delete_task(task_id)

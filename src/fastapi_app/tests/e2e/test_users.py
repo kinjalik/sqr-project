@@ -1,26 +1,20 @@
-from unittest.mock import MagicMock
-
 import pytest
 from _pytest.fixtures import fixture
 from app import di
+from app.db_client import DatabaseClient, DatabaseConfig
 from app.main import app
 from fastapi.testclient import TestClient
 
 
-def _db_mock():
-    return MagicMock()
-
-
-@fixture()
-def db_mock():
-    return _db_mock()
+def db():
+    return DatabaseClient(DatabaseConfig(database_url="sqlite:///./test.db"))
 
 
 @fixture(autouse=True)
 def test_client():
     tapp = TestClient(app)
 
-    app.dependency_overrides[di.db_client] = _db_mock
+    app.dependency_overrides[di.db_client] = db
     return tapp
 
 
@@ -28,7 +22,7 @@ def test_client():
     "email, password",
     [("test_1@mail.com", "test_passwd1"), ("test_2@mail.ru", "test_passwd2")],
 )
-async def test_user_register(test_client, email, password, db_mock):
+async def test_user_register(test_client, email, password):
     data = {"email": email, "hashed_password": password}
     response = test_client.post(
         url="/register",
@@ -37,12 +31,12 @@ async def test_user_register(test_client, email, password, db_mock):
 
     assert response.status_code == 201
 
-    # TODO: test service level
-    assert db_mock.add_user.assert_called_once_with(email, password)
-    # TODO try to receive 4x response for duplicate user
+    response = test_client.post(
+        url="/register",
+        json=data,
+    )
+
     assert response.status_code == 400
-    # TODO: test service level
-    assert db_mock.add_user.assert_not_called()
 
 
 @pytest.mark.parametrize(

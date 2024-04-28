@@ -3,6 +3,7 @@ from datetime import datetime
 from pydantic_settings import BaseSettings
 from sqlalchemy import (Boolean, Column, DateTime, Integer, String,
                         create_engine)
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 Base = declarative_base()
@@ -44,10 +45,13 @@ class DatabaseClient:
             return new_task.id
 
     def add_user(self, email: str, hashed_password: str):
-        with self.make_session() as session:
-            new_user = User(email=email, hashed_password=hashed_password)
-            session.add(new_user)
-            session.commit()
+        try:
+            with self.make_session() as session:
+                new_user = User(email=email, hashed_password=hashed_password)
+                session.add(new_user)
+                session.commit()
+        except IntegrityError as err:
+            raise ValueError("User already exist") from err
 
     def get_tasks(self, user: str):
         with self.make_session() as session:

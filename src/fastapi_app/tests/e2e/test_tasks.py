@@ -29,17 +29,17 @@ def another_user():
 
 
 @fixture()
-def test_client(user):
+def test_client(user, db_mock):
     tapp = TestClient(app)
 
-    app.dependency_overrides[di.db_client] = _db_mock
-    app.state.user = user
+    app.dependency_overrides[di.db_client] = lambda: db_mock
+    app.state.user = user.email
     return tapp
 
 
-@pytest.mark.parametrize("text, prior", [("test1", "1"), ("test2", "2")])
+@pytest.mark.parametrize("text, prior", [("test1", 1), ("test2", 2)])
 async def test_create_task(user, test_client, text, prior, db_mock):
-    date = datetime.now()
+    date = datetime.now().replace(microsecond=0)
     data = {
         "user": user.email,
         "text": text,
@@ -66,4 +66,6 @@ async def test_get_tasks(user, test_client, db_mock):
     db_mock.get_tasks.assert_called_once_with(user.email)
 
 
-# TODO: test other methods
+async def test_complete_task(user, test_client):
+    pass
+    # TODO: extend this when ids will be received from routes

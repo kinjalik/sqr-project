@@ -50,18 +50,15 @@ def _get_tasks():
         return []
 
 
-def _edit_task(id, text, deadline, prior, is_completed):
-    url = f"{api}/task"
+def _edit_task(id, text, deadline, prior):
+    url = f"{api}/task/{id}"
     data = {
-        "id": id,
-        "user": st.session_state.current_user,
         "text": text,
-        "deadline": deadline,
+        "deadline": deadline.strftime("%Y.%m.%d %H:%M:%S"),
         "prior": prior,
-        "is_completed": is_completed,
     }
     response = requests.put(url, json=data, timeout=5)
-    if response.status_code == 200:
+    if response.status_code == 204:
         return True
     else:
         print(response.text)
@@ -101,7 +98,7 @@ def _task_form(task: dict, mode: Literal["show", "edit"]):
         )
         if not creating:
             is_completed = st.checkbox(
-                "Is Completed?", task.get("is_completed"), disabled=mode == "show"
+                "Is Completed?", task.get("is_completed"), disabled=True
             )
 
         if mode == "edit":
@@ -118,6 +115,9 @@ def _task_form(task: dict, mode: Literal["show", "edit"]):
                 if prior is None or (prior < 1 or prior > 5):
                     st.error("Priority must be between 1 and 5", icon="❌")
                     return
+                if deadline is None or deadline < datetime.datetime.now().date():
+                    st.error("Deadline must be in the future", icon="❌")
+                    return
 
                 if creating:
                     id = _create_task(text, deadline, prior)
@@ -127,7 +127,7 @@ def _task_form(task: dict, mode: Literal["show", "edit"]):
                             st.session_state.edited_tasks.pop(NO_ID)
                         )
                 else:
-                    success = _edit_task(id, text, deadline, prior, is_completed)
+                    success = _edit_task(id, text, deadline, prior)
 
                 if success:
                     st.toast("Saved successfully", icon="✔")

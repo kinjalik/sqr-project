@@ -37,7 +37,7 @@ def test_client(user, db):
 
 @pytest.mark.parametrize("text, prior", [("test1", 1), ("test2", 2)])
 async def test_create_task(user, test_client, text, prior):
-    date = datetime.now().replace(microsecond=0) + timedelta(days=4)
+    date = datetime.now().replace(microsecond=0) - timedelta(days=4)
     data = {
         "user": user.email,
         "text": text,
@@ -46,8 +46,14 @@ async def test_create_task(user, test_client, text, prior):
     }
 
     response = test_client.post("/task", json=data)
+    assert response.status_code == 404
 
+    date = datetime.now().replace(microsecond=0) + timedelta(days=4)
+    data["deadline"] = date.strftime("%Y.%m.%d %H:%M:%S")
+
+    response = test_client.post("/task", json=data)
     assert response.status_code == 201
+
     print(response.content)
     print(json.loads(response.content)["task_id"])
     assert json.loads(response.content)["task_id"]

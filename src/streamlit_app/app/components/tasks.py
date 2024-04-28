@@ -17,7 +17,7 @@ def _create_task(text: str, deadline: datetime.datetime, prior: int):
         "deadline": deadline.strftime("%Y.%m.%d %H:%M:%S"),
         "prior": prior,
     }
-    response = requests.post(url, json=data)
+    response = requests.post(url, json=data, timeout=5)
     if response.status_code == 201:
         return int(response.json().get("task_id"))
     else:
@@ -27,7 +27,7 @@ def _create_task(text: str, deadline: datetime.datetime, prior: int):
 
 def _delete_task(task_id):
     url = f"{api}/task/{task_id}"
-    response = requests.delete(url)
+    response = requests.delete(url, timeout=5)
     if response.status_code == 204:
         return True
     else:
@@ -37,7 +37,7 @@ def _delete_task(task_id):
 
 def _get_tasks():
     url = f"{api}/tasks"
-    response = requests.get(url)
+    response = requests.get(url, timeout=5)
     if response.status_code == 200:
         tasks = response.json().get("tasks")
         for task in tasks:
@@ -58,7 +58,7 @@ def _edit_task(id, text, deadline, prior, is_completed):
         "prior": prior,
         "is_completed": is_completed,
     }
-    response = requests.put(url, json=data)
+    response = requests.put(url, json=data, timeout=5)
     if response.status_code == 200:
         return True
     else:
@@ -67,7 +67,7 @@ def _edit_task(id, text, deadline, prior, is_completed):
     
 def _complete_task(id):
     url = f"{api}/task/{id}/complete"
-    response = requests.put(url)
+    response = requests.put(url, timeout=5)
     if response.status_code == 204:
         return True
     else:

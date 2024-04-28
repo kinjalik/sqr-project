@@ -11,7 +11,7 @@ def _register_user(username, password):
         "email": username,
         "hashed_password": password,
     }
-    response = requests.post(url, json=data)
+    response = requests.post(url, json=data, timeout=5)
     if response.status_code == 201:
         st.toast("Successfully registered", icon="✔")
         st.session_state.current_user = username
@@ -27,7 +27,7 @@ def _register_user(username, password):
 def _login_user(username, password):
     url = f"{api}/login"
     data = {"email": username, "hashed_password": password}
-    response = requests.post(url, json=data)
+    response = requests.post(url, json=data, timeout=5)
     if response.status_code == 200:
         st.toast("Successfully logged in", icon="✔")
         st.session_state.current_user = username

@@ -66,7 +66,7 @@ jobs:
           name: Coverage report
           path: coverage_report
 
-  security:
+  bandit-sast:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -96,6 +96,32 @@ jobs:
         if: success() || failure()
         with:
           name: security_reports
+          path: '*.sarif'
+  
+  snyk-sast:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Init
+        uses: ./.github/actions/init
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/python@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --sarif-file-output=snyk.sarif
+      - name: Upload snyk SARIF report
+        uses: github/codeql-action/upload-sarif@v3
+        if: success() || failure()
+        with:
+          sarif_file: snyk.sarif
+          category: snyk
+      - name: Upload SARIF reports as artifacts
+        uses: actions/upload-artifact@v4
+        if: success() || failure()
+        with:
+          name: snyk
           path: '*.sarif'
 
   smoke-test:

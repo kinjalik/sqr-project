@@ -6,5 +6,4 @@ async def create_user(email: str, hashed_password: str, db_client: DatabaseClien
 
 
 async def get_user(email: str, hashed_password: str, db_client: DatabaseClient) -> str:
-    pass
-    # TODO: return db_client.get_user(email, hashed_password)
+    return db_client.get_user(email=email, hashed_password=hashed_password)

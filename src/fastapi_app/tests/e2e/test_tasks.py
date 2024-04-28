@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pytest
 from _pytest.fixtures import fixture
@@ -37,7 +37,7 @@ def test_client(user, db):
 
 @pytest.mark.parametrize("text, prior", [("test1", 1), ("test2", 2)])
 async def test_create_task(user, test_client, text, prior):
-    date = datetime.now().replace(microsecond=0)
+    date = datetime.now().replace(microsecond=0) + timedelta(days=4)
     data = {
         "user": user.email,
         "text": text,
@@ -55,7 +55,7 @@ async def test_create_task(user, test_client, text, prior):
 
 @pytest.mark.parametrize("text, prior", [("test1", 1), ("test2", 2)])
 async def test_delete_task(user, test_client, text, prior):
-    date = datetime.now().replace(microsecond=0)
+    date = datetime.now().replace(microsecond=0) + timedelta(days=4)
 
     data = {
         "user": user.email,
@@ -78,7 +78,7 @@ async def test_delete_task(user, test_client, text, prior):
 
 @pytest.mark.parametrize("text, prior", [("test1", 1), ("test2", 2)])
 async def test_get_tasks(user, test_client, text, prior):
-    date = datetime.now().replace(microsecond=0)
+    date = datetime.now().replace(microsecond=0) + timedelta(days=4)
 
     data = {
         "user": user.email,
@@ -109,7 +109,7 @@ async def test_get_tasks(user, test_client, text, prior):
 
 @pytest.mark.parametrize("text, prior", [("test1", 1), ("test2", 2)])
 async def test_complete_task(user, test_client, text, prior):
-    date = datetime.now().replace(microsecond=0)
+    date = datetime.now().replace(microsecond=0) + timedelta(days=4)
 
     data = {
         "user": user.email,
@@ -154,7 +154,7 @@ async def test_complete_task(user, test_client, text, prior):
 
 @pytest.mark.parametrize("text, prior", [("test1", 1), ("test2", 2)])
 async def test_edit_task(user, test_client, text, prior):
-    date = datetime.now().replace(microsecond=0)
+    date = datetime.now().replace(microsecond=0) + timedelta(days=4)
 
     data = {
         "user": user.email,

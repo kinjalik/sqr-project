@@ -19,8 +19,8 @@ async def create_task(
             task_data=task_create_data,
             db_client=db_client,
         )
-    except ValueError:
-        return Response(status_code=400, content={"error": "the user was not found"})
+    except ValueError as error:
+        return responses.JSONResponse(status_code=404, content={"error": str(error)})
 
     return responses.JSONResponse(status_code=201, content={"task_id": task_id})
 
@@ -108,8 +108,6 @@ async def edit_task(
             task_data=task_edit_data,
             db_client=db_client,
         )
-    except ValueError:
-        return responses.JSONResponse(
-            status_code=404, content={"error": "the task was not found"}
-        )
+    except ValueError as err:
+        return responses.JSONResponse(status_code=404, content={"error": str(err)})
     return Response(status_code=204)

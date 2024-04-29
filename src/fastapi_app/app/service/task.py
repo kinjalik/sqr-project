@@ -6,6 +6,12 @@ from app.schemas.task import TaskCreateSchema, TaskEditSchema, TaskModel
 
 
 async def create_task(task_data: TaskCreateSchema, db_client: DatabaseClient):
+    if (
+        datetime.strptime(task_data.deadline, "%Y.%m.%d %H:%M:%S").timestamp()
+        < datetime.now().replace(microsecond=0).timestamp()
+    ):
+        raise ValueError("Provided deadline overdue")
+
     return db_client.add_task(
         task_data.user,
         task_data.text,
@@ -27,6 +33,11 @@ async def get_tasks(user: str, db_client: DatabaseClient) -> List[TaskModel]:
 
 
 async def edit_task(task_id: str, task_data: TaskEditSchema, db_client: DatabaseClient):
+    if (
+        datetime.strptime(task_data.deadline, "%Y.%m.%d %H:%M:%S").timestamp()
+        < datetime.now().replace(microsecond=0).timestamp()
+    ):
+        raise ValueError("Provided deadline overdue")
     return db_client.edit_task(
         task_id,
         task_data.text,

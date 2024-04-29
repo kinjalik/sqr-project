@@ -16,6 +16,11 @@ test-backend:
 	. venv/bin/activate; cd src/fastapi_app; \
 	PYTHONPATH=. pytest tests -W ignore::DeprecationWarning $(coverage_params) $(ARGS)
 
+test-frontend:
+	. venv/bin/activate; cd src/streamlit_app; \
+	PYTHONPATH=. pytest tests -W ignore::DeprecationWarning $(ARGS)
+
+
 # Covered testing
 coverage-backend: coverage_report_output ?= coverage_report
 coverage-backend: coverage_params = --cov=app --cov-report=term-missing:skip-covered --cov-report=html:$(ROOT_DIR)/$(coverage_report_output) --cov-branch

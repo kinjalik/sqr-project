@@ -5,6 +5,7 @@ import pytest
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
@@ -15,7 +16,18 @@ webdriverwait_timeout = 10
 
 @pytest.fixture(scope="function")
 def driver():
-    driver = webdriver.Chrome()
+    chrome_options = Options()
+    options = [
+        "--headless",
+        "--disable-gpu",
+        "--window-size=1920,1200",
+        "--ignore-certificate-errors",
+        "--disable-extensions",
+        "--no-sandbox",
+        "--disable-dev-shm-usage"
+    ]
+    [chrome_options.add_argument(x) for x in options]
+    driver = webdriver.Chrome(options=chrome_options)
     driver.implicitly_wait(webdriverwait_timeout)
     yield driver
     driver.quit()

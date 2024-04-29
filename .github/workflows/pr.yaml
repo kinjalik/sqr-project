@@ -49,6 +49,7 @@ jobs:
         if: success() || failure()
         with:
           report_paths: "*.junit.xml"
+          check_name: Backend Tests
       
       - name: Pytest coverage comment
         id: coverageComment
@@ -136,3 +137,24 @@ jobs:
       - name: Stop docker-compose
         if: success() || failure()
         run: docker-compose down
+
+  system-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Init
+        uses: ./.github/actions/init
+      - name: Install software
+        run: sudo apt-get install -y chromium-browser
+      - name: Start docker-compose
+        run: make docker-run ARGS='-d --wait --wait-timeout 60'
+      - name: Run tests
+        run: |
+          make ARGS="--junitxml=$(pwd)/report.junit.xml" test-frontend
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v4
+        if: success() || failure()
+        with:
+          report_paths: "*.junit.xml"
+          check_name: System Tests
+      

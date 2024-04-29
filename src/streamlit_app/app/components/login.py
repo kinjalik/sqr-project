@@ -1,4 +1,5 @@
 import time
+
 import requests
 import streamlit as st
 
@@ -64,7 +65,11 @@ def _auth_form():
             time.sleep(0.5)
             st.rerun()
 
-        if register_pressed and _register_user(username, password) and _login_user(username, password):
+        if (
+            register_pressed
+            and _register_user(username, password)
+            and _login_user(username, password)
+        ):
             time.sleep(0.5)
             st.rerun()
 

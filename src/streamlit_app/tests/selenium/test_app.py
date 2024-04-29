@@ -4,8 +4,9 @@ from datetime import datetime, timedelta
 import pytest
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
-from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
@@ -24,7 +25,7 @@ def driver():
         "--ignore-certificate-errors",
         "--disable-extensions",
         "--no-sandbox",
-        "--disable-dev-shm-usage"
+        "--disable-dev-shm-usage",
     ]
     [chrome_options.add_argument(x) for x in options]
     driver = webdriver.Chrome(options=chrome_options)
@@ -192,6 +193,7 @@ def _task_create(driver: WebDriver, text: str, deadline: str, priority: str):
     text_field.send_keys(text)
     deadline_field.send_keys(deadline)
     priority_field.send_keys(priority)
+    driver.find_element(By.TAG_NAME, "body").send_keys(Keys.ESCAPE)
     save_button.click()
 
     WebDriverWait(driver, webdriverwait_timeout).until(
@@ -234,6 +236,7 @@ def test_task_create_cancel(driver: WebDriver, credentials: str):
     text.send_keys("Test Task")
     deadline.send_keys((datetime.now() + timedelta(days=1)).strftime("%Y/%m/%d"))
     priority.send_keys("1")
+    driver.find_element(By.TAG_NAME, "body").send_keys(Keys.ESCAPE)
     cancel_button.click()
 
     WebDriverWait(driver, webdriverwait_timeout).until(
